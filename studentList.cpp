@@ -39,13 +39,13 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 
 
 //FUNCTION PROTOTYPES:
-void ADD(Student* &, Student* &); 
+void ADD(Student* &, Student** &); 
 void PRINT(Student* &);
 void DELETE(Student* &);
 bool QUIT(Student* &);
 
 int HASH(Student* &);
-void CHAIN(Student* &, Student* &, int current, int limit);
+void CHAIN(Student* &, Student* &, int, int);
 void UNCHAIN(Student* &);
 Student* RANDOM_STUDENT();
 
@@ -80,40 +80,38 @@ int main() { //this is where the user will input commands to edit a student list
 
     else if (!strcmp(input, "ADD")) { //if the character array spells out "ADD"...
       
-  //Variables:
-  char firstN[20]; //new student's first name (taken from input)
-  char lastN[20]; //new student's last name (taken from input)
-  int ID; // new student's id (taken from input)
-  float GPA; // new student's gpa (taken from input)
-  Student* stuPnt = new Student; //create a new pointer to a new Struct (a new Student)
-  //(learned how to create pointer from Double Pointer visualizer provided in Canvas at https://pythontutor.com/visualize.html#mode=display)  
+      char firstN[20]; //new student's first name (taken from input)
+      char lastN[20]; //new student's last name (taken from input)
+      int ID; // new student's id (taken from input)
+      float GPA; // new student's gpa (taken from input)
+      Student* stuPnt = new Student; //create a new pointer to a new Struct (a new Student)  
   
-  //Ask for new student details:
-  cout << "what is the first name of the student?" << endl; //adding new first name
-  cin >> firstN;
-  strcpy((*stuPnt).firstName, firstN); //need to dereference pointer to set variables in new Struct (new student) equal to inputs (through strcpy())
+      //Ask for new student details:
+      cout << "what is the first name of the student?" << endl; //adding new first name
+      cin >> firstN;
+      strcpy((*stuPnt).firstName, firstN); //need to dereference pointer to set variables in new Struct (new student) equal to inputs (through strcpy())
 
-  cout << "last name?" << endl; //do the same for the new last name
-  cin >> lastN;
-  strcpy((*stuPnt).secondName, lastN);
+      cout << "last name?" << endl; //do the same for the new last name
+      cin >> lastN;
+      strcpy((*stuPnt).lastName, lastN);
 
-  cout << "id?" << endl; //do the same for the new id
-  cin >> ID;
-  (*stuPnt).id = ID;
+      cout << "id?" << endl; //do the same for the new id
+      cin >> ID;
+      (*stuPnt).id = ID;
 
-  cout << "GPA?" << endl; //do the same for the new gpa
-  cin >> GPA;
-  (*stuPnt).gpa = GPA;
+      cout << "GPA?" << endl; //do the same for the new gpa
+      cin >> GPA;
+      (*stuPnt).gpa = GPA;
 
-      ADD(studVec); //add a student
+      ADD(stuPnt, table); //add a student
     }
 
     else if (!strcmp(input, "DELETE")) { //if the character array spells out "DELETE"...
-      DELETE(studVec); //delete a student
+      //DELETE(studVec); //delete a student
     }
     
     else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
-      PRINT(studVec); //print out the students
+      //PRINT(studVec); //print out the students
     }    
   }
   return 0;
@@ -130,7 +128,9 @@ void ADD(Student* &newStudent, Student* &array) {
 
   int index = HASH(newStudent); //get the index I should put the student in
 
-  Student* head = array[index]; //the thing at that location
+  Student* head = new Student;
+
+  head = array[index]; //the thing at that location
 
   if (head = NULL) {//no collision
     array[index] = newStudent;
@@ -148,23 +148,25 @@ void ADD(Student* &newStudent, Student* &array) {
 /* The PRINT() function takes in the current vector of students (student pointers) and
 prints out each student registered (and their info).
 */
+
+/*
 void PRINT(vector<Student*> &studVec) {
 
   cout << "Students:" << endl;
   
-  for (vector<Student*>::iterator student = studVec.begin(); student != studVec.end(); student++) { //iterate through each student in the vector
+  for (vector<Student*>::iterator student = studVec.begin(); student != studVec.end(); student++) { //iterate through each student in the vector*/
 
     /*referred to Mr. Galbraith's video on Vectors in Canvas to learn about using "->" to access aspects of an object pointed at
      (link in heading comments)*/
-
+/*
     cout << (*student) -> firstName << " "; //print out the first and last name of the student
     cout << (*student) -> secondName << ", ";
-
-    cout << "ID: " << (*student) -> id << ", "; //print out the student's id
+*/
+//cout << "ID: " << (*student) -> id << ", "; //print out the student's id
 
     /*referred to Mr. Galbraith's video on Formatting Outputs in Canvas to learn about .setf() and .precision()
       (link in heading comments)*/
-    
+/*  
     cout.setf(ios::showpoint); //want trailing zeroes in gpa (5 as 5.00)
     cout.precision(3); //restrict precision to three, allowing two decimal places for gpa
     cout << "GPA: " << (*student) -> gpa << endl; //print out the student's gpa
@@ -173,11 +175,12 @@ void PRINT(vector<Student*> &studVec) {
   return;
 
 }
+*/
 
 /* The DELETE() function takes in the current vector of students (student pointers) and
 prompts the user for a student id. It then erases the student with that id from the student list.
 */
-void DELETE(vector<Student*> &studVec) {
+//void DELETE(vector<Student*> &studVec) {
 
   //referred to this source for how to delete objects in a vector (with the .erase() command:
   //https://www.geeksforgeeks.org/cpp-stl-cheat-sheet/#T3
@@ -189,25 +192,25 @@ void DELETE(vector<Student*> &studVec) {
     in the vector) can be accessed through vectorName.begin())
    */
   
-  int rmID; //the id of the student that will be removed
-  int count = 0; //counts the distance each "student" is away from the beginning
-  int position = -1; //the position of the student needed to be deleted
+  //int rmID; //the id of the student that will be removed
+  //int count = 0; //counts the distance each "student" is away from the beginning
+  //int position = -1; //the position of the student needed to be deleted
  
-  cout << "Which student do you want to remove from the student list? (Give ID)" << endl;
-  cin >> rmID; //get the id of the student we want to remove
+  //cout << "Which student do you want to remove from the student list? (Give ID)" << endl;
+  //cin >> rmID; //get the id of the student we want to remove
 
 
-    for (vector<Student*>::iterator student = studVec.begin(); student != studVec.end(); student++) { //iterate through each student in the vector
+//for (vector<Student*>::iterator student = studVec.begin(); student != studVec.end(); student++) { //iterate through each student in the vector
 
-    ++count; //increase the count (creates a "number" for each students position from studVec.begin())
+//++count; //increase the count (creates a "number" for each students position from studVec.begin())
 
-    if (((*student) -> id) == rmID) { //if the student's id is equal to the id being searched for..
-      position = count; //this is the position of the student we want removed!
-      delete (*student); //help from Mr. Galbraith for delete command (deletes the Struct pointed to by the student pointer - removes the actual student)
+//if (((*student) -> id) == rmID) { //if the student's id is equal to the id being searched for..
+//position = count; //this is the position of the student we want removed!
+//delete (*student); //help from Mr. Galbraith for delete command (deletes the Struct pointed to by the student pointer - removes the actual student)
 
-    }
-  }
-
+//}
+// }
+/*
     if (position != -1) { //if there is a student (position) with that id
       studVec.erase(studVec.begin() + position - 1); //remove student pointer at that position from the vector
 
@@ -220,6 +223,7 @@ void DELETE(vector<Student*> &studVec) {
   
   return;
 }
+*/
 
 bool QUIT(Student* &array) {
   return false;
@@ -237,6 +241,8 @@ Student* RANDOM_STUDENT() {
 void CHAIN(Student* newStudent&, Student* head&, int current, int limit) {
 
   Student* next = head -> nextStudent;
+  int cur = current;
+  int lim = limit;
   
   if (next == NULL) { //add to end of chain
 
@@ -244,8 +250,9 @@ void CHAIN(Student* newStudent&, Student* head&, int current, int limit) {
     return;
   }
 
-  current++;
-  CHAIN(newStudent, next, current, limit); //recurse
+  cur++;
+  
+  CHAIN(newStudent, next, cur, lim); //recurse
   return;
 }
 

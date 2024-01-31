@@ -1,7 +1,7 @@
-//C++ Programming: Student List Project
+//C++ Programming: Student List Project With HASH TABLE!
 //by Akhil Baidya
 
-//Date of Submission (mm/dd/yy): 10/16/23
+//Date of Submission (mm/dd/yy): 02/08/24
 
 /* Notes: In this program, the user will be able to edit a list of students.
 The user can input the commands "ADD," "DELETE," "PRINT" and "QUIT." QUIT
@@ -18,30 +18,7 @@ exits the program.
 
 
 /* Credits: 
-
-1. In order to understand the syntax of creating vectors and passing them in by reference in function prototypes and functions, Mr. Galbraith's video on Vectors in Canvas was observed: https://www.youtube.com/watch?v=KD_pItB8Ygg&t=1s (video url).
-
-The same video was also referred to in order to understand how to deference pointers (with (*pointerName)) and access aspects of the object the pointer is pointed towards using "->."
-
-The same video was also used to write the iterator when printing out the students in the student vector in the PRINT function.
-
-
-2. Referred to cplusplus.com (https://cplusplus.com/reference/cctype/toupper/) to find toupper() command which was used to standardize user command inputs (such as "PRINT" or "pRinT") to upper case.
-
-
-3.Referred to GeeksforGeeks website for learning how to delete objects in a vector (with the .erase() command):https://www.geeksforgeeks.org/cpp-stl-cheat-sheet/#T3
-
-This source shows how the .erase() command takes the position of an object in a vector and deletes the object at that position. The source also shows how the beginning position (of the first element in the vector) can be accessed through vectorName.begin())
-
-4. Code for making Structs was based on Mr. Galbraith's video on Structs in Canvas:https://www.youtube.com/watch?v=vMCKhGuROnk&t=1s
-
-5. Code for adding trailing zeroes and changing the preciseness of numbers when printed out was based on Mr. Galbraith's video on Formatting Outputs in Canvas:
-https://www.youtube.com/watch?v=kv8XRxxaD8Q&t=290s
-
-6. Learned how to create pointer, such as Student* stuPnt = new Student;, based on the Double Pointer visualizer provided by 
-Mr. Galbraith on Canvas: https://pythontutor.com/visualize.html#mode=display
-
-7. Help from Mr. Galbraith for learning about "delete" command (to remove a student Struct)
+Initial studentList.cpp file taken from my github at https://github.com/AkhilBaidya/StudentList.git
 */
 
 
@@ -52,23 +29,25 @@ Mr. Galbraith on Canvas: https://pythontutor.com/visualize.html#mode=display
 using namespace std;
 
 //DEFINING STRUCTS:
-struct Student { //Struct code based on Mr. Galbraith's video on Structs in Canvas (link in heading notes)
-
+struct Student { //a student has a first name, last name, id, gpa, and a following student
   char firstName[20];
-  char secondName[20];
+  char lastName[20];
   int id;
-  float gpa; //a Student has a first name, last name, id, and gpa 
+  float gpa;  
+  Student* nextStudent;
 };
 
 
 //FUNCTION PROTOTYPES:
 
-/*Referred to Mr. Galbraith's videos for understanding how to pass vectors by reference (link in heading notes) */
+void ADD(Student* &, Student* &); 
+void PRINT(Student* &);
+void DELETE(Student* &);
+bool QUIT(Student* &);
 
-void ADD(vector<Student*> &); 
-void PRINT(vector<Student*> &);
-void DELETE(vector<Student*> &);
-  
+int HASH(Student* &);
+Student* RANDOM_STUDENT();
+
 
 //MAIN FUNCTION:
 
@@ -225,4 +204,17 @@ void DELETE(vector<Student*> &studVec) {
     }
   
   return;
+}
+
+bool QUIT(Student* &array) {
+  return false;
+}
+
+int HASH(Student* &student){
+  return 0;
+}
+
+Student* RANDOM_STUDENT() {
+  Student* bob = new Student();
+  return bob;
 }

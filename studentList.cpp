@@ -45,6 +45,8 @@ void DELETE(Student* &);
 bool QUIT(Student* &);
 
 int HASH(Student* &);
+void CHAIN(Student* &, Student* &, int current, int limit);
+void UNCHAIN(Student* &);
 Student* RANDOM_STUDENT();
 
 
@@ -131,12 +133,13 @@ void ADD(Student* &newStudent, Student* &array) {
   Student* head = array[index]; //the thing at that location
 
   if (head = NULL) {//no collision
-    
+    array[index] = newStudent;
   }
 
-  //add linked list function
+  else {
+    CHAIN(newStudent, head, 0, 4); //chaining needed
+  }
   
-  studVec.push_back(stuPnt); //puts new pointer (pointing to new student created) in the vector of pointers
   cout << "added student" << endl;
   
   return;
@@ -229,4 +232,23 @@ int HASH(Student* &student){
 Student* RANDOM_STUDENT() {
   Student* bob = new Student();
   return bob;
+}
+
+void CHAIN(Student* newStudent&, Student* head&, int current, int limit) {
+
+  Student* next = head -> nextStudent;
+  
+  if (next == NULL) { //add to end of chain
+
+    head -> nextStudent = newStudent;
+    return;
+  }
+
+  current++;
+  CHAIN(newStudent, next, current, limit); //recurse
+  return;
+}
+
+void UNCHAIN(Student* head&) {
+  return;
 }

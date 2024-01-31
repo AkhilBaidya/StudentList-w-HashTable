@@ -34,12 +34,11 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
   char lastName[20];
   int id;
   float gpa;  
-  Student* nextStudent;
+  Student* nextStudent = NULL;
 };
 
 
 //FUNCTION PROTOTYPES:
-
 void ADD(Student* &, Student* &); 
 void PRINT(Student* &);
 void DELETE(Student* &);
@@ -56,6 +55,8 @@ int main() { //this is where the user will input commands to edit a student list
 
   //Variables:
   bool running = true; //loops the student list program
+  Student* table[100]; // a hash table that will store the students 
+  
   vector<Student*> studVec; //contains pointers to the registered students
   char input[7]; //an array to store the user's inputs (max length is 6)
 
@@ -76,29 +77,7 @@ int main() { //this is where the user will input commands to edit a student list
     }
 
     else if (!strcmp(input, "ADD")) { //if the character array spells out "ADD"...
-      ADD(studVec); //add a student
-    }
-
-    else if (!strcmp(input, "DELETE")) { //if the character array spells out "DELETE"...
-      DELETE(studVec); //delete a student
-    }
-    
-    else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
-      PRINT(studVec); //print out the students
-    }    
-  }
-  return 0;
-}
-
-//OTHER FUNCTIONS IMPLEMENTED IN MAIN FUNCTION:
-
-
-/*The ADD() function takes in the current vector of students (student pointers) and
-creates a new student (and student pointer that is added to the vector).
- */
-
-void ADD(vector<Student*> &studVec) {
-
+      
   //Variables:
   char firstN[20]; //new student's first name (taken from input)
   char lastN[20]; //new student's last name (taken from input)
@@ -124,6 +103,39 @@ void ADD(vector<Student*> &studVec) {
   cin >> GPA;
   (*stuPnt).gpa = GPA;
 
+      ADD(studVec); //add a student
+    }
+
+    else if (!strcmp(input, "DELETE")) { //if the character array spells out "DELETE"...
+      DELETE(studVec); //delete a student
+    }
+    
+    else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
+      PRINT(studVec); //print out the students
+    }    
+  }
+  return 0;
+}
+
+//OTHER FUNCTIONS IMPLEMENTED IN MAIN FUNCTION:
+
+
+/*The ADD() function takes in the current vector of students (student pointers) and
+creates a new student (and student pointer that is added to the vector).
+ */
+
+void ADD(Student* &newStudent, Student* &array) {
+
+  int index = HASH(newStudent); //get the index I should put the student in
+
+  Student* head = array[index]; //the thing at that location
+
+  if (head = NULL) {//no collision
+    
+  }
+
+  //add linked list function
+  
   studVec.push_back(stuPnt); //puts new pointer (pointing to new student created) in the vector of pointers
   cout << "added student" << endl;
   

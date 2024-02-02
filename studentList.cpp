@@ -238,8 +238,18 @@ bool QUIT(Student* &array) {
 }
 
 int HASH(Student* &student){
-  cout << "hashed" << endl;
-  return 0;
+
+  //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
+
+  char* first = student -> firstName;
+  
+  int sum;
+
+  for (int i = 0; i < strlen(first); i++) {
+    sum += (int) toupper(first[i]); //add up sum of chars in first name - average first name lenth around 6 so max around 540
+  }
+
+  return (sum/6)%100;
 }
 
 Student* RANDOM_STUDENT() {

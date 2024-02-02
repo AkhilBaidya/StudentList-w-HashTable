@@ -40,7 +40,7 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 
 //FUNCTION PROTOTYPES:
 void ADD(Student* &, Student**); 
-void PRINT(Student* &);
+void PRINT(Student**, int size);
 void DELETE(Student* &);
 bool QUIT(Student* &);
 
@@ -57,8 +57,8 @@ int main() { //this is where the user will input commands to edit a student list
 
   //Variables:
   bool running = true; //loops the student list program
-  Student* table[100]; // a hash table that will store the students
-
+  int size = 100;
+  Student* table[size]; // a hash table that will store the students
   for (int i = 0; i < 100; i++) {
     table[i] = NULL; //suggested by Mr. Galbraith - everything is not NULL by default :)
   }
@@ -115,7 +115,7 @@ int main() { //this is where the user will input commands to edit a student list
     }
     
     else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
-      //PRINT(studVec); //print out the students
+      PRINT(table, size); //print out the students
     }    
   }
   return 0;
@@ -157,33 +157,30 @@ void ADD(Student* &newStudent, Student** array) {
 prints out each student registered (and their info).
 */
 
-/*
-void PRINT(vector<Student*> &studVec) {
+void PRINT(Student** array, int size) {
 
-  cout << "Students:" << endl;
+  cout.setf(ios::showpoint); //from studentList
+  cout.precision(3);
   
-  for (vector<Student*>::iterator student = studVec.begin(); student != studVec.end(); student++) { //iterate through each student in the vector*/
+  for (int i = 0; i < size; i++) {
 
-    /*referred to Mr. Galbraith's video on Vectors in Canvas to learn about using "->" to access aspects of an object pointed at
-     (link in heading comments)*/
-/*
-    cout << (*student) -> firstName << " "; //print out the first and last name of the student
-    cout << (*student) -> secondName << ", ";
-*/
-//cout << "ID: " << (*student) -> id << ", "; //print out the student's id
+    Student* current = array[i];
+    
+    do {
 
-    /*referred to Mr. Galbraith's video on Formatting Outputs in Canvas to learn about .setf() and .precision()
-      (link in heading comments)*/
-/*  
-    cout.setf(ios::showpoint); //want trailing zeroes in gpa (5 as 5.00)
-    cout.precision(3); //restrict precision to three, allowing two decimal places for gpa
-    cout << "GPA: " << (*student) -> gpa << endl; //print out the student's gpa
+      if (current != NULL) {
+
+	cout << "Name: " << current -> firstName << " " << current -> lastName << ", ";
+	cout << "ID: " << current -> id << ", ";
+	cout << "GPA: " << current -> gpa << endl;
+	current = current -> nextStudent;
+      }
+
+    }
+    while (current != NULL);
   }
-  
-  return;
-
+    return;
 }
-*/
 
 /* The DELETE() function takes in the current vector of students (student pointers) and
 prompts the user for a student id. It then erases the student with that id from the student list.

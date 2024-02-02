@@ -39,7 +39,7 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 
 
 //FUNCTION PROTOTYPES:
-void ADD(Student* &, Student** &); 
+void ADD(Student* &, Student**); 
 void PRINT(Student* &);
 void DELETE(Student* &);
 bool QUIT(Student* &);
@@ -57,8 +57,12 @@ int main() { //this is where the user will input commands to edit a student list
 
   //Variables:
   bool running = true; //loops the student list program
-  Student* table[100]; // a hash table that will store the students 
-  
+  Student* table[100]; // a hash table that will store the students
+
+  for (int i = 0; i < 100; i++) {
+    table[i] = NULL; //suggested by Mr. Galbraith - everything is not NULL by default :)
+  }
+
   vector<Student*> studVec; //contains pointers to the registered students
   char input[7]; //an array to store the user's inputs (max length is 6)
 
@@ -124,22 +128,26 @@ int main() { //this is where the user will input commands to edit a student list
 creates a new student (and student pointer that is added to the vector).
  */
 
-void ADD(Student* &newStudent, Student* &array) {
+void ADD(Student* &newStudent, Student** array) {
 
   int index = HASH(newStudent); //get the index I should put the student in
-
+  cout << index << endl;
+  
   Student* head = new Student;
 
   head = array[index]; //the thing at that location
+ 
+  cout << "no seg again" << endl;
 
-  if (head = NULL) {//no collision
+  if (head == NULL) {//no collision
     array[index] = newStudent;
   }
 
   else {
     CHAIN(newStudent, head, 0, 4); //chaining needed
   }
-  
+
+  cout << "no seg 2" << endl; 
   cout << "added student" << endl;
   
   return;
@@ -230,6 +238,7 @@ bool QUIT(Student* &array) {
 }
 
 int HASH(Student* &student){
+  cout << "hashed" << endl;
   return 0;
 }
 
@@ -238,7 +247,7 @@ Student* RANDOM_STUDENT() {
   return bob;
 }
 
-void CHAIN(Student* newStudent&, Student* head&, int current, int limit) {
+void CHAIN(Student* &newStudent, Student* &head, int current, int limit) {
 
   Student* next = head -> nextStudent;
   int cur = current;
@@ -256,6 +265,6 @@ void CHAIN(Student* newStudent&, Student* head&, int current, int limit) {
   return;
 }
 
-void UNCHAIN(Student* head&) {
+void UNCHAIN(Student* &head) {
   return;
 }

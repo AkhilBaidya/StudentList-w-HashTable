@@ -48,7 +48,7 @@ int HASH(Student* &, int);
 void CHAIN(Student* &, Student* &, int, int);
 void UNCHAIN(Student* &);
 Student* RANDOM_STUDENT();
-void REHASH(Student **, Student **);
+void REHASH(Student **, Student **, int, int);
 
 
 //MAIN FUNCTION:
@@ -277,6 +277,25 @@ void UNCHAIN(Student* &head) {
   return;
 }
 
-void REHASH(Student** oldArray, Student** newArray) {
+void REHASH(Student** oldArray, Student** newArray, int currSize, int newSize) {
+
+  for (int i = 0; i < currSize; i++) {
+
+    Student* current = oldArray[i]; //this loop brought from print function above
+  
+    do {
+
+      if (current != NULL) {
+	ADD(current, newArray, newSize); //add to new array
+	current = current -> nextStudent; //loop
+      }
+
+    }
+    while (current != NULL);
+    
+  }
+
+  delete oldArray;
+  
   return;
 }

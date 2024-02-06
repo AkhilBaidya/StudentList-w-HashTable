@@ -45,10 +45,10 @@ void DELETE(Student* &);
 bool QUIT(Student* &);
 
 int HASH(Student* &, int);
-void CHAIN(Student* &, Student* &, int, int);
+void CHAIN(Student* &, Student* &, Student**, int, int, int);
 void UNCHAIN(Student* &);
 Student* RANDOM_STUDENT();
-void REHASH(Student **, Student **, int, int);
+Student** REHASH(Student**, Student**, int, int);
 
 
 //MAIN FUNCTION:
@@ -144,7 +144,7 @@ void ADD(Student* &newStudent, Student** array, int &size) {
   }
 
   else {
-    CHAIN(newStudent, head, 0, 4); //chaining needed
+    CHAIN(newStudent, head, array, 0, 4, size); //chaining needed
   }
 
   cout << "no seg 2" << endl; 
@@ -255,7 +255,7 @@ Student* RANDOM_STUDENT() {
   return bob;
 }
 
-void CHAIN(Student* &newStudent, Student* &head, int current, int limit) {
+void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current, int limit, int size) {
 
   Student* next = head -> nextStudent;
   int cur = current;
@@ -267,9 +267,16 @@ void CHAIN(Student* &newStudent, Student* &head, int current, int limit) {
     return;
   }
 
+  if (cur == lim) {
+    Student* newPlace[size*2];
+    Student** pnter = newPlace;
+    oldArray = REHASH(oldArray, pnter, size, size*2);
+    return;
+  }
+
   cur++;
   
-  CHAIN(newStudent, next, cur, lim); //recurse
+  CHAIN(newStudent, next, oldArray, cur, lim, size); //recurse
   return;
 }
 
@@ -277,7 +284,7 @@ void UNCHAIN(Student* &head) {
   return;
 }
 
-void REHASH(Student** oldArray, Student** newArray, int currSize, int newSize) {
+Student** REHASH(Student** oldArray, Student** newArray, int currSize, int newSize) {
 
   for (int i = 0; i < currSize; i++) {
 
@@ -297,5 +304,5 @@ void REHASH(Student** oldArray, Student** newArray, int currSize, int newSize) {
 
   delete oldArray;
   
-  return;
+  return newArray;
 }

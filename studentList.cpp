@@ -39,15 +39,16 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 
 
 //FUNCTION PROTOTYPES:
-void ADD(Student* &, Student**); 
-void PRINT(Student**, int size);
+void ADD(Student* &, Student**, int &); 
+void PRINT(Student**, int);
 void DELETE(Student* &);
 bool QUIT(Student* &);
 
-int HASH(Student* &);
+int HASH(Student* &, int);
 void CHAIN(Student* &, Student* &, int, int);
 void UNCHAIN(Student* &);
 Student* RANDOM_STUDENT();
+void REHASH(Student **, Student **);
 
 
 //MAIN FUNCTION:
@@ -63,7 +64,6 @@ int main() { //this is where the user will input commands to edit a student list
     table[i] = NULL; //suggested by Mr. Galbraith - everything is not NULL by default :)
   }
 
-  vector<Student*> studVec; //contains pointers to the registered students
   char input[7]; //an array to store the user's inputs (max length is 6)
 
   while (running) {
@@ -107,7 +107,7 @@ int main() { //this is where the user will input commands to edit a student list
       cin >> GPA;
       (*stuPnt).gpa = GPA;
 
-      ADD(stuPnt, table); //add a student
+      ADD(stuPnt, table, size); //add a student
     }
 
     else if (!strcmp(input, "DELETE")) { //if the character array spells out "DELETE"...
@@ -128,9 +128,9 @@ int main() { //this is where the user will input commands to edit a student list
 creates a new student (and student pointer that is added to the vector).
  */
 
-void ADD(Student* &newStudent, Student** array) {
+void ADD(Student* &newStudent, Student** array, int &size) {
 
-  int index = HASH(newStudent); //get the index I should put the student in
+  int index = HASH(newStudent, size); //get the index I should put the student in
   cout << index << endl;
   
   Student* head = new Student;
@@ -234,7 +234,7 @@ bool QUIT(Student* &array) {
   return false;
 }
 
-int HASH(Student* &student){
+int HASH(Student* &student, int size){
 
   //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
 
@@ -246,8 +246,9 @@ int HASH(Student* &student){
     sum += (int) toupper(first[i]); //add up sum of chars in first name - average first name lenth around 6 so max around 540
   }
 
-  return (sum/6)%100;
+  return (sum/6)%size;
 }
+
 
 Student* RANDOM_STUDENT() {
   Student* bob = new Student();
@@ -273,5 +274,9 @@ void CHAIN(Student* &newStudent, Student* &head, int current, int limit) {
 }
 
 void UNCHAIN(Student* &head) {
+  return;
+}
+
+void REHASH(Student** oldArray, Student** newArray) {
   return;
 }

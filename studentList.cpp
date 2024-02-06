@@ -24,7 +24,7 @@ Initial studentList.cpp file taken from my github at https://github.com/AkhilBai
 
 #include <iostream>
 #include <cstring>
-#include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -47,7 +47,7 @@ bool QUIT(Student* &);
 int HASH(Student* &, int);
 void CHAIN(Student* &, Student* &, Student**, int, int, int);
 void UNCHAIN(Student* &);
-Student* RANDOM_STUDENT();
+void RANDOM_STUDENT(int);
 Student** REHASH(Student**, Student**, int, int);
 
 
@@ -250,9 +250,41 @@ int HASH(Student* &student, int size){
 }
 
 
-Student* RANDOM_STUDENT() {
-  Student* bob = new Student();
-  return bob;
+void RANDOM_STUDENT(int num) {
+  //https://www.w3schools.com/cpp/cpp_files.asp
+
+  ifstream MyReadFile("firstNames.txt"); //taken from above source, the code
+
+  //random first name:
+  char** firsts[20];
+  char* name;
+  int index = 0;
+
+  while(getline(MyReadFile, name)) {
+	firsts[index] = name;
+	index++;
+     }
+
+  ifstream MyReadFile("lastNames.txt");
+
+  //random last name:
+  char** lasts[20];
+  index = 0;
+  while(getline(MyReadFile, name)) {
+    lasts[index] = name;
+    index++;
+  }
+  
+  for (int i = 0; i < num; i++) {
+    Student* newStud = new Student;
+    
+    //https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/ for rand() function paired with modulus:
+    newStud -> firstName = firsts[(int)rand()%20];
+    newStud -> lastName = lasts[(int)rand()%20];
+
+    newStud -> gpa = ((int)rand())%4;
+  }
+  return;
 }
 
 void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current, int limit, int size) {

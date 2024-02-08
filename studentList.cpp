@@ -60,6 +60,7 @@ int main() { //this is where the user will input commands to edit a student list
   bool running = true; //loops the student list program
   int size = 100;
   Student* table[size]; // a hash table that will store the students
+  
   for (int i = 0; i < 100; i++) {
     table[i] = NULL; //suggested by Mr. Galbraith - everything is not NULL by default :)
   }
@@ -68,7 +69,7 @@ int main() { //this is where the user will input commands to edit a student list
 
   while (running) {
     
-    cout << "What would you like to do? (ADD, DELETE, PRINT Students, QUIT program)" << endl;
+    cout << "What would you like to do? (ADD, DELETE, PRINT Students, RAND [create random students], QUIT program)" << endl;
     cin >> input;
 
     for (int i = 0; i < strlen(input); i++) {
@@ -116,7 +117,15 @@ int main() { //this is where the user will input commands to edit a student list
     
     else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
       PRINT(table, size); //print out the students
-    }    
+    }
+
+    else if (!strcmp(input, "RAND")) {
+      int num;
+      cout << "How many random students would you like to add?" << endl;
+      cin >> num;
+      RANDOM_STUDENT(num, table, size);
+      cout << "random students added!" << endl;
+    }
   }
   return 0;
 }
@@ -136,18 +145,16 @@ void ADD(Student* &newStudent, Student** array, int &size) {
   Student* head = new Student;
 
   head = array[index]; //the thing at that location
- 
-  cout << "no seg again" << endl;
 
   if (head == NULL) {//no collision
     array[index] = newStudent;
   }
 
   else {
+    cout << "going to have to chain!" << endl;
     CHAIN(newStudent, head, array, 0, 4, size); //chaining needed
   }
-
-  cout << "no seg 2" << endl; 
+  
   cout << "added student" << endl;
   
   return;
@@ -158,7 +165,7 @@ prints out each student registered (and their info).
 */
 
 void PRINT(Student** array, int size) {
-
+  
   cout.setf(ios::showpoint); //from studentList
   cout.precision(3);
   
@@ -239,6 +246,8 @@ int HASH(Student* &student, int size){
   //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
 
   char* first = student -> firstName;
+  float gpa = student -> gpa;
+  int id = student -> id;
   
   int sum;
 
@@ -246,13 +255,16 @@ int HASH(Student* &student, int size){
     sum += (int) toupper(first[i]); //add up sum of chars in first name - average first name lenth around 6 so max around 540
   }
 
-  return (sum/6)%size;
+  int num = ((sum + (int)gpa)/6) * (size/100);
+
+  cout << "got a hash of " << (num%size) << endl;
+  return ((num%size));
 }
 
 
 void RANDOM_STUDENT(int num, Student** array, int size) {
   //https://www.w3schools.com/cpp/cpp_files.asp
-
+  
   srand(time(0)); //this allows random results to be random every time program runs
   
   ifstream file("firstNames.txt"); //taken from above source, the code
@@ -276,7 +288,7 @@ void RANDOM_STUDENT(int num, Student** array, int size) {
     //https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/ for rand() function paired with modulus:
     strcpy((*newStud).firstName, firsts[rand()%20]);
     strcpy((*newStud).lastName, lasts[rand()%20]);
-    newStud -> gpa = ((int)rand())%4;
+    newStud -> gpa = rand()%4;
     newStud -> id = i;
     ADD(newStud, array, size);
   }
@@ -296,9 +308,17 @@ void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current
   }
 
   if (cur == lim) {
+    cout << "woah - reached max collisions and going to have to rehash" << endl;
     Student* newPlace[size*2];
-    Student** pnter = newPlace;
-    oldArray = REHASH(oldArray, pnter, size, size*2);
+
+    //make sure everthing here is null:
+    for (int i = 0; i < size*2; i++) {
+      newPlace[i] = NULL;
+    }
+    cout << "made empty bigger array and entering rehash" << endl;
+    cout << "here is the old array address before: " << oldArray << endl;
+    oldArray = REHASH(oldArray, newPlace, size, size*2);
+    cout << "rehashed!" << "changed address to " << oldArray << endl;
     return;
   }
 
@@ -314,6 +334,7 @@ void UNCHAIN(Student* &head) {
 
 Student** REHASH(Student** oldArray, Student** newArray, int &currSize, int newSize) {
 
+  cout << "entered rehash function for new size " << newSize << endl;
   for (int i = 0; i < currSize; i++) {
 
     Student* current = oldArray[i]; //this loop brought from print function above
@@ -321,6 +342,8 @@ Student** REHASH(Student** oldArray, Student** newArray, int &currSize, int newS
     do {
 
       if (current != NULL) {
+	cout << "going to move " << current -> firstName << endl;
+	//cout << "who should be HASH(current, newSize);"
 	ADD(current, newArray, newSize); //add to new array
 	current = current -> nextStudent; //loop
       }
@@ -330,7 +353,12 @@ Student** REHASH(Student** oldArray, Student** newArray, int &currSize, int newS
     
   }
 
-  delete oldArray;
+  cout << "put everything in new array, going to delete old array" << endl;
+  
+  delete[] oldArray;
+
+  cout << "deleted old array" << endl;
+  
   currSize = newSize;
   return newArray;
 }

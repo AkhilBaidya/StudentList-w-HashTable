@@ -156,7 +156,7 @@ void ADD(Student* newStudent, Student** array, int &size) {
     CHAIN(newStudent, head, array, 0, 4, size); //chaining needed
   }
   
-  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << endl;
+  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << " to " << array << endl;
   
   return;
 }
@@ -207,13 +207,18 @@ int HASH(Student* student, int size){
   //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
 
   char* first = student -> firstName;
+  char* last = student -> lastName;
   float gpa = student -> gpa;
   int id = student -> id;
   
   int sum;
 
   for (int i = 0; i < strlen(first); i++) {
-    sum += (int) toupper(first[i]); //add up sum of chars in first name - average first name lenth around 6 so max around 540
+    sum += (int) ((toupper(first[i]))*97); //add up sum of chars in first name - average first name lenth around 6 so max around 540
+  }
+
+  for (int i = 0; i < strlen(last); i++) {
+    sum += (int) ((toupper(last[i]))*97);
   }
 
   //int num = ((sum + (int)gpa)/6) * (size/100);
@@ -274,7 +279,7 @@ void CHAIN(Student* newStudent, Student* head, Student** oldArray, int c, int li
 
     int newSize = (int) size*2.3; //*prime number sugestion from my father to help with reshashing  
     
-    cout << "woah - reached max collisions and going to have to rehash of size " << newSize<<>>endl;
+    cout << "woah - reached max collisions and going to have to rehash of size " << newSize<< endl;
     Student* newPlace[newSize];
     cout << "made new array" << endl;
     //make sure everthing here is null:
@@ -288,7 +293,7 @@ void CHAIN(Student* newStudent, Student* head, Student** oldArray, int c, int li
     oldArray = newPlace;
     size = newSize;
     cout << "rehashed!" << "changed address to " << oldArray << endl;
-    ADD(newStudent, oldArray, size);
+    //ADD(newStudent, oldArray, size);
   }
     else {
       cout << "reached placing next student" << endl;

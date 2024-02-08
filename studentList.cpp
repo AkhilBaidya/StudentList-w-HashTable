@@ -45,10 +45,10 @@ void DELETE(Student* &);
 bool QUIT(Student* &);
 
 int HASH(Student* &, int);
-void CHAIN(Student* &, Student* &, Student**, int, int, int);
+void CHAIN(Student* &, Student* &, Student**, int, int, int &);
 void UNCHAIN(Student* &);
-void RANDOM_STUDENT(int);
-Student** REHASH(Student**, Student**, int, int);
+void RANDOM_STUDENT(int, Student**, int);
+Student** REHASH(Student**, Student**, int &, int);
 
 
 //MAIN FUNCTION:
@@ -250,44 +250,40 @@ int HASH(Student* &student, int size){
 }
 
 
-void RANDOM_STUDENT(int num) {
+void RANDOM_STUDENT(int num, Student** array, int size) {
   //https://www.w3schools.com/cpp/cpp_files.asp
 
-  ifstream MyReadFile("firstNames.txt"); //taken from above source, the code
+  srand(time(0)); //this allows random results to be random every time program runs
+  
+  ifstream file("firstNames.txt"); //taken from above source, the code
+  
+  ifstream file2("lastNames.txt");
 
   //random first name:
-  char** firsts[20];
-  char* name;
-  int index = 0;
-
-  while(getline(MyReadFile, name)) {
-	firsts[index] = name;
-	index++;
-     }
-
-  ifstream MyReadFile("lastNames.txt");
-
-  //random last name:
-  char** lasts[20];
-  index = 0;
-  while(getline(MyReadFile, name)) {
-    lasts[index] = name;
-    index++;
+  char* firsts[20]; //https://www.udacity.com/blog/2021/05/how-to-read-from-a-file-in-cpp.html taught me that I could use >>
+  char* lasts[20];
+    
+  for (int i = 0; i < 20; i++) {
+    firsts[i] = new char[20];
+    lasts[i] = new char[20];
+    file >> firsts[i];
+    file2 >> lasts[i];
   }
   
   for (int i = 0; i < num; i++) {
     Student* newStud = new Student;
     
     //https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/ for rand() function paired with modulus:
-    newStud -> firstName = firsts[(int)rand()%20];
-    newStud -> lastName = lasts[(int)rand()%20];
-
+    strcpy((*newStud).firstName, firsts[rand()%20]);
+    strcpy((*newStud).lastName, lasts[rand()%20]);
     newStud -> gpa = ((int)rand())%4;
+    newStud -> id = i;
+    ADD(newStud, array, size);
   }
   return;
 }
 
-void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current, int limit, int size) {
+void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current, int limit, int &size) {
 
   Student* next = head -> nextStudent;
   int cur = current;
@@ -316,7 +312,7 @@ void UNCHAIN(Student* &head) {
   return;
 }
 
-Student** REHASH(Student** oldArray, Student** newArray, int currSize, int newSize) {
+Student** REHASH(Student** oldArray, Student** newArray, int &currSize, int newSize) {
 
   for (int i = 0; i < currSize; i++) {
 
@@ -335,6 +331,6 @@ Student** REHASH(Student** oldArray, Student** newArray, int currSize, int newSi
   }
 
   delete oldArray;
-  
+  currSize = newSize;
   return newArray;
 }

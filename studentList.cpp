@@ -38,17 +38,17 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 };
 
 
-//FUNCTION PROTOTYPES:
-void ADD(Student* &, Student**, int &); 
+//FUNCTION PROTOTYPES: decided not to pass pointers by reference, just to be careful
+void ADD(Student* , Student**, int &); 
 void PRINT(Student**, int);
-void DELETE(Student* &);
-bool QUIT(Student* &);
+void DELETE(Student* );
+bool QUIT(Student* );
 
-int HASH(Student* &, int);
-void CHAIN(Student* &, Student* &, Student**, int, int, int &);
-void UNCHAIN(Student* &);
-void RANDOM_STUDENT(int, Student**, int);
-Student** REHASH(Student**, Student**, int &, int);
+int HASH(Student* , int);
+void CHAIN(Student* , Student* , Student**, int, int, int &);
+void UNCHAIN(Student* );
+void RANDOM_STUDENT(int, Student**, int); //made void (debugging)
+void REHASH(Student**, Student**, int &, int);
 
 
 //MAIN FUNCTION:
@@ -90,7 +90,9 @@ int main() { //this is where the user will input commands to edit a student list
       int ID; // new student's id (taken from input)
       float GPA; // new student's gpa (taken from input)
       Student* stuPnt = new Student; //create a new pointer to a new Struct (a new Student)  
-  
+
+      stuPnt -> nextStudent = NULL;
+      
       //Ask for new student details:
       cout << "what is the first name of the student?" << endl; //adding new first name
       cin >> firstN;
@@ -137,17 +139,16 @@ int main() { //this is where the user will input commands to edit a student list
 creates a new student (and student pointer that is added to the vector).
  */
 
-void ADD(Student* &newStudent, Student** array, int &size) {
+void ADD(Student* newStudent, Student** array, int &size) {
 
   int index = HASH(newStudent, size); //get the index I should put the student in
   cout << index << endl;
   
-  Student* head = new Student;
-
-  head = array[index]; //the thing at that location
+  Student* head = array[index]; //the thing at that location
 
   if (head == NULL) {//no collision
     array[index] = newStudent;
+    array[index] -> nextStudent = NULL; //making next student null after adding to array just in case something weird occurs with memory
   }
 
   else {
@@ -155,7 +156,7 @@ void ADD(Student* &newStudent, Student** array, int &size) {
     CHAIN(newStudent, head, array, 0, 4, size); //chaining needed
   }
   
-  cout << "added student" << endl;
+  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << endl;
   
   return;
 }
@@ -192,56 +193,16 @@ void PRINT(Student** array, int size) {
 /* The DELETE() function takes in the current vector of students (student pointers) and
 prompts the user for a student id. It then erases the student with that id from the student list.
 */
-//void DELETE(vector<Student*> &studVec) {
-
-  //referred to this source for how to delete objects in a vector (with the .erase() command:
-  //https://www.geeksforgeeks.org/cpp-stl-cheat-sheet/#T3
-
-  /*This source shows how the .erase() command takes the position of an object
-    in a vector and deletes the object at that position.
-
-    The source also shows how the beginning position (of the first element
-    in the vector) can be accessed through vectorName.begin())
-   */
-  
-  //int rmID; //the id of the student that will be removed
-  //int count = 0; //counts the distance each "student" is away from the beginning
-  //int position = -1; //the position of the student needed to be deleted
- 
-  //cout << "Which student do you want to remove from the student list? (Give ID)" << endl;
-  //cin >> rmID; //get the id of the student we want to remove
-
-
-//for (vector<Student*>::iterator student = studVec.begin(); student != studVec.end(); student++) { //iterate through each student in the vector
-
-//++count; //increase the count (creates a "number" for each students position from studVec.begin())
-
-//if (((*student) -> id) == rmID) { //if the student's id is equal to the id being searched for..
-//position = count; //this is the position of the student we want removed!
-//delete (*student); //help from Mr. Galbraith for delete command (deletes the Struct pointed to by the student pointer - removes the actual student)
-
-//}
-// }
-/*
-    if (position != -1) { //if there is a student (position) with that id
-      studVec.erase(studVec.begin() + position - 1); //remove student pointer at that position from the vector
-
-      cout << "removed student" << endl;
-    }
-
-    else {
-      cout << "student not found" << endl;
-    }
-  
+void DELETE(Student** array, int id) {
   return;
 }
-*/
 
-bool QUIT(Student* &array) {
+
+bool QUIT(Student* array) {
   return false;
 }
 
-int HASH(Student* &student, int size){
+int HASH(Student* student, int size){
 
   //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
 
@@ -255,10 +216,11 @@ int HASH(Student* &student, int size){
     sum += (int) toupper(first[i]); //add up sum of chars in first name - average first name lenth around 6 so max around 540
   }
 
-  int num = ((sum + (int)gpa)/6) * (size/100);
+  //int num = ((sum + (int)gpa)/6) * (size/100);
 
-  cout << "got a hash of " << (num%size) << endl;
-  return ((num%size));
+  //cout << "got a hash of " << (num%size) << endl;
+  //return ((sum/6)%97) * (size/100);
+  return (sum)%size;
 }
 
 
@@ -295,8 +257,45 @@ void RANDOM_STUDENT(int num, Student** array, int size) {
   return;
 }
 
-void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current, int limit, int &size) {
+void CHAIN(Student* newStudent, Student* head, Student** oldArray, int c, int limit, int &size) { //made this a while loop (maybe recursion is contributing to seg fault?
 
+  Student* current = head;
+  int count = 1;
+
+  cout << "attempting while loop" << endl;
+  while (current -> nextStudent != NULL) {
+
+    cout << "entered loop" << endl;
+    current = current -> nextStudent;
+    count++;
+  }
+
+  if (count == limit) {
+
+    int newSize = (int) size*2.3; //*prime number sugestion from my father to help with reshashing  
+    
+    cout << "woah - reached max collisions and going to have to rehash of size " << newSize<<>>endl;
+    Student* newPlace[newSize];
+    cout << "made new array" << endl;
+    //make sure everthing here is null:
+    for (int i = 0; i < newSize; i++) {
+      newPlace[i] = NULL;
+    }
+    
+    cout << "made empty bigger array and entering rehash" << endl;
+    cout << "here is the old array address before: " << oldArray << endl;
+    REHASH(oldArray, newPlace, size, newSize);
+    oldArray = newPlace;
+    size = newSize;
+    cout << "rehashed!" << "changed address to " << oldArray << endl;
+    ADD(newStudent, oldArray, size);
+  }
+    else {
+      cout << "reached placing next student" << endl;
+      current -> nextStudent = newStudent;
+      current -> nextStudent -> nextStudent = NULL; //suggestion by father: just in case, set the next student as null after adding it to the end of the linked list 
+    }
+  /*
   Student* next = head -> nextStudent;
   int cur = current;
   int lim = limit;
@@ -324,28 +323,39 @@ void CHAIN(Student* &newStudent, Student* &head, Student** oldArray, int current
 
   cur++;
   
-  CHAIN(newStudent, next, oldArray, cur, lim, size); //recurse
+  CHAIN(newStudent, next, oldArray, cur, lim, size); //recurse*/
   return;
 }
 
-void UNCHAIN(Student* &head) {
+void UNCHAIN(Student* head) {
   return;
 }
 
-Student** REHASH(Student** oldArray, Student** newArray, int &currSize, int newSize) {
+void REHASH(Student** oldArray, Student** newArray, int &currSize, int newSize) {
 
   cout << "entered rehash function for new size " << newSize << endl;
   for (int i = 0; i < currSize; i++) {
 
     Student* current = oldArray[i]; //this loop brought from print function above
-  
+    
     do {
 
       if (current != NULL) {
-	cout << "going to move " << current -> firstName << endl;
+	cout << "at position "<<i<<" - going to move " << current -> firstName << current -> lastName << endl;
+	
 	//cout << "who should be HASH(current, newSize);"
-	ADD(current, newArray, newSize); //add to new array
+
+	Student* newStudent = new Student;
+	strcpy(newStudent -> firstName, current -> firstName);
+	strcpy(newStudent -> lastName, current -> lastName);
+	newStudent -> gpa = current -> gpa;
+	newStudent -> id = current -> id;
+	newStudent -> nextStudent = NULL;
+	
+	ADD(newStudent, newArray, newSize); //add to new array
+	Student *oldCurr = current;
 	current = current -> nextStudent; //loop
+	//delete oldCurr;
       }
 
     }
@@ -354,11 +364,15 @@ Student** REHASH(Student** oldArray, Student** newArray, int &currSize, int newS
   }
 
   cout << "put everything in new array, going to delete old array" << endl;
+
+  for (int i = 0; i < currSize; i++) {
+    oldArray[i] = NULL; //dunno how to delete this yet
+  }
   
-  delete[] oldArray;
+  //delete[] oldArray;
 
   cout << "deleted old array" << endl;
   
   currSize = newSize;
-  return newArray;
+  return;
 }

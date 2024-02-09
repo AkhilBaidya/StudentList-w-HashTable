@@ -223,8 +223,49 @@ void PRINT(Student** arrayPntr, int size) {
 /* The DELETE() function takes in the current vector of students (student pointers) and
 prompts the user for a student id. It then erases the student with that id from the student list.
 */
-void DELETE(Student** array, int id) {
-  return;
+void DELETE(Student** array, int wantedId) {
+  //based on print function code
+  for (int i = 0; i < size; i++) {
+
+    Student* current = arrayPntr[i];
+
+    Student* next = new Student();
+    
+    while (current != NULL) {
+
+      next = current -> nextStudent;
+
+      if (next != NULL) {
+
+	if (current -> id == wantedId) {
+	  char answer;
+	  cout << "Would you like to remove this student with the specified id (y/n)?" << endl;
+	  cout << "Name: " << current -> firstName << " " << current -> lastName << ", ";
+	  cout << "ID: " << current -> id << ", ";
+	  cout << "GPA: " << current -> gpa << endl;
+	  cin >> answer;  
+	}
+      }
+
+      
+    }
+
+
+    
+    do {
+
+      if (current != NULL) {
+
+	cout << "Name: " << current -> firstName << " " << current -> lastName << ", ";
+	cout << "ID: " << current -> id << ", ";
+	cout << "GPA: " << current -> gpa << endl;
+	current = current -> nextStudent;
+      }
+
+    }
+    while (current != NULL);
+  }
+    return;
 }
 
 

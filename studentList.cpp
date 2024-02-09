@@ -39,16 +39,16 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 
 
 //FUNCTION PROTOTYPES: decided not to pass pointers by reference, just to be careful
-void ADD(Student* , Student***, int &); 
-void PRINT(Student***, int);
-void DELETE(Student***, int );
-bool QUIT(Student*** );
+void ADD(Student*, Student** &, int &); 
+void PRINT(Student**, int);
+void DELETE(Student**, int );
+bool QUIT(Student**);
 
-int HASH(Student* , int);
-void CHAIN(Student*, Student* , Student***, int, int, int &);
+int HASH(Student*, int);
+void CHAIN(Student*, Student* , Student** &, int, int, int &);
 void UNCHAIN(Student* );
-void RANDOM_STUDENT(int, Student***, int); //made void (debugging)
-void REHASH(Student**, Student***, int &, int);
+void RANDOM_STUDENT(int, Student** &, int); //made void (debugging)
+void REHASH(Student** &, Student** &, int &, int);
 
 
 //MAIN FUNCTION:
@@ -60,12 +60,15 @@ int main() { //this is where the user will input commands to edit a student list
   bool running = true; //loops the student list program
   int size = 100;
   Student* table[size]; // a hash table that will store the students
-  Student** tpntr = new Student*[100];
-  *tpntr = table;
   
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < size; i++) {
     table[i] = NULL; //suggested by Mr. Galbraith - everything is not NULL by default :)
   }
+  
+  Student** tpntr = new Student*[size]; //help from Mr. Galbraith in making this **
+  cout << tpntr << endl;
+  tpntr = table;
+  cout << tpntr << endl;
 
   char input[7]; //an array to store the user's inputs (max length is 6)
 
@@ -91,8 +94,8 @@ int main() { //this is where the user will input commands to edit a student list
       char lastN[20]; //new student's last name (taken from input)
       int ID; // new student's id (taken from input)
       float GPA; // new student's gpa (taken from input)
-      Student* stuPnt = new Student; //create a new pointer to a new Struct (a new Student)  
 
+      Student* stuPnt = new Student(); //create a new pointer to a new Struct (a new Student)  
       stuPnt -> nextStudent = NULL;
       
       //Ask for new student details:
@@ -142,28 +145,27 @@ int main() { //this is where the user will input commands to edit a student list
 creates a new student (and student pointer that is added to the vector).
  */
 
-void ADD(Student* newStudent, Student*** arrayPntr, int &size) {
+void ADD(Student* newStudent, Student** &arrayPntr, int &size) {
 
   int index = HASH(newStudent, size); //get the index I should put the student in
   cout << index << endl;
-
-  Student* array[size];
-  array = *arrayPntr;
   
-  Student* head = array[index]; //the thing at that location
+  Student* head = arrayPntr[index]; //the thing at that location
 
   if (head == NULL) {//no collision
-    array[index] = newStudent;
-    array[index] -> nextStudent = NULL; //making next student null after adding to array just in case something weird occurs with memory
+    arrayPntr[index] = newStudent;
+    arrayPntr[index] -> nextStudent = NULL; //making next student null after adding to array just in case something weird occurs with memory
   }
 
   else {
     cout << "going to have to chain!" << endl;
-    CHAIN(newStudent, head, arrayPntr, 0, 4, size); //chaining needed
+    CHAIN(newStudent, head, arrayPntr, 0, 3, size); //chaining needed
   }
   
-  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << " to " << array << endl;
-  
+  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << " to " << arrayPntr << endl;
+  //cout << "********" << endl;
+  //PRINT(arrayPntr, size);
+  //cout << "******endofupdate*" << endl;
   return;
 }
 
@@ -171,17 +173,14 @@ void ADD(Student* newStudent, Student*** arrayPntr, int &size) {
 prints out each student registered (and their info).
 */
 
-void PRINT(Student*** arrayPntr, int size) {
+void PRINT(Student** arrayPntr, int size) {
   
   cout.setf(ios::showpoint); //from studentList
   cout.precision(3);
-
-  Student* array[size];
-  array = *arrayPntr;
-  
+ 
   for (int i = 0; i < size; i++) {
 
-    Student* current = array[i];
+    Student* current = arrayPntr[i];
     
     do {
 
@@ -202,12 +201,12 @@ void PRINT(Student*** arrayPntr, int size) {
 /* The DELETE() function takes in the current vector of students (student pointers) and
 prompts the user for a student id. It then erases the student with that id from the student list.
 */
-void DELETE(Student*** array, int id) {
+void DELETE(Student** array, int id) {
   return;
 }
 
 
-bool QUIT(Student*** array) {
+bool QUIT(Student** array) {
   return false;
 }
 
@@ -221,10 +220,10 @@ int HASH(Student* student, int size){
   int id = student -> id;
   
   int sum;
-
+  
   for (int i = 0; i < strlen(first); i++) {
-    sum += (int) ((toupper(first[i]))*97); //add up sum of chars in first name - average first name lenth around 6 so max around 540
-  }
+    sum += (int) ((toupper(first[i]))*17); //add up sum of chars in first name - average first name lenth around 6 so max around 540
+    }
 
   for (int i = 0; i < strlen(last); i++) {
     sum += (int) ((toupper(last[i]))*97);
@@ -234,11 +233,11 @@ int HASH(Student* student, int size){
 
   //cout << "got a hash of " << (num%size) << endl;
   //return ((sum/6)%97) * (size/100);
-  return (sum)%size;
+  return (sum)%(size * 97/100);
 }
 
 
-void RANDOM_STUDENT(int num, Student*** array, int size) {
+void RANDOM_STUDENT(int num, Student** &array, int size) {
   //https://www.w3schools.com/cpp/cpp_files.asp
   
   srand(time(0)); //this allows random results to be random every time program runs
@@ -259,7 +258,7 @@ void RANDOM_STUDENT(int num, Student*** array, int size) {
   }
   
   for (int i = 0; i < num; i++) {
-    Student* newStud = new Student;
+    Student* newStud = new Student();
     
     //https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/ for rand() function paired with modulus:
     strcpy((*newStud).firstName, firsts[rand()%20]);
@@ -271,9 +270,10 @@ void RANDOM_STUDENT(int num, Student*** array, int size) {
   return;
 }
 
-void CHAIN(Student* newStudent, Student* head, Student*** oldArrayPntr, int c, int limit, int &size) { //made this a while loop (maybe recursion is contributing to seg fault?
+void CHAIN(Student* newStudent, Student* head, Student** &oldArrayPntr, int c, int limit, int &size) { //made this a while loop (maybe recursion is contributing to seg fault?
 
-  Student* current = head;
+  Student* current = new Student();
+  current = head;
   int count = 1;
 
   cout << "attempting while loop" << endl;
@@ -289,26 +289,30 @@ void CHAIN(Student* newStudent, Student* head, Student*** oldArrayPntr, int c, i
     int newSize = (int) size*2.3; //*prime number sugestion from my father to help with reshashing  
     
     cout << "woah - reached max collisions and going to have to rehash of size " << newSize<< endl;
-    Student*** newPlacePntr = new Student**;
-    Student* newPlace[newSize];
-   
+    Student** newPlacePntr = new Student*[newSize];
+    
     cout << "made new array" << endl;
     //make sure everthing here is null:
     for (int i = 0; i < newSize; i++) {
-      newPlace[i] = NULL;
+      newPlacePntr[i] = NULL;
     }
-
-    *newPlacePntr = newPlace;
     
     cout << "made empty bigger array and entering rehash" << endl;
-    cout << "here is the old array address before: " << *oldArrayPntr << endl;
+    cout << "here is the old array address before: " << oldArrayPntr << endl;
     REHASH(oldArrayPntr, newPlacePntr, size, newSize);
-    *oldArrayPntr = *newPlacePntr;
-    newPlacePntr = NULL;
-    delete newPlacePntr;
-    size = newSize;
-    cout << "rehashed!" << "changed address to " << (*oldArrayPntr) << endl;
+    //*oldArrayPntr = *newPlacePntr;
+
+    //delete[] newPlacePntr;
+    
+    //newPlacePntr = NULL;
+    //delete newPlacePntr;
+    //size = newSize;
+    cout << "rehashed!" << "changed address to " << oldArrayPntr << endl;
     ADD(newStudent, oldArrayPntr, size);
+
+    cout << "array is now*************" << endl;
+    PRINT(oldArrayPntr, size);
+    cout << "***********" << endl;
   }
     else {
       cout << "reached placing next student" << endl;
@@ -347,22 +351,17 @@ void CHAIN(Student* newStudent, Student* head, Student*** oldArrayPntr, int c, i
   return;
 }
 
-void UNCHAIN(Student* head) {
+void UNCHAIN(Student** head) {
   return;
 }
 
-void REHASH(Student*** oldArrayPntr, Student*** newArrayPntr, int &currSize, int newSize) {
+void REHASH(Student** &oldArrayPntr, Student** &newArrayPntr, int &currSize, int newSize) {
 
   cout << "entered rehash function for new size " << newSize << endl;
-  Student* oldArray[size];
-  Student* newArray[size];
-
-  oldArray = *oldArrayPntr;
-  newArray = *newArrayPntr;
   
   for (int i = 0; i < currSize; i++) {
 
-    Student* current = oldArray[i]; //this loop brought from print function above
+    Student* current = oldArrayPntr[i]; //this loop brought from print function above
     
     do {
 
@@ -371,7 +370,7 @@ void REHASH(Student*** oldArrayPntr, Student*** newArrayPntr, int &currSize, int
 	
 	//cout << "who should be HASH(current, newSize);"
 
-	Student* newStudent = new Student;
+	Student* newStudent = new Student();
 	strcpy(newStudent -> firstName, current -> firstName);
 	strcpy(newStudent -> lastName, current -> lastName);
 	newStudent -> gpa = current -> gpa;
@@ -379,7 +378,7 @@ void REHASH(Student*** oldArrayPntr, Student*** newArrayPntr, int &currSize, int
 	newStudent -> nextStudent = NULL;
 	
 	ADD(newStudent, newArrayPntr, newSize); //add to new array
-	Student *oldCurr = current;
+	//Student *oldCurr = current;
 	current = current -> nextStudent; //loop
 	//delete oldCurr;
       }
@@ -391,11 +390,20 @@ void REHASH(Student*** oldArrayPntr, Student*** newArrayPntr, int &currSize, int
 
   cout << "put everything in new array, going to delete old array" << endl;
 
-  for (int i = 0; i < currSize; i++) {
-    oldArray[i] = NULL; //dunno how to delete this yet
-  }
+  //for (int i = 0; i < currSize; i++) {
+  //oldArrayPntr[i] = NULL; //dunno how to delete this yet
+  //}
 
-  oldArrayPntr = NULL;
+  oldArrayPntr = newArrayPntr;
+
+  cout << "*******rehash(still have to add more perhaps*" << endl;
+  PRINT(oldArrayPntr, newSize);
+  cout << "******" << endl;
+
+  //for (int i = 0; i < newSize; i++) {
+  //newArrayPntr[i] = NULL;
+  //}
+
   //delete[] oldArray;
 
   cout << "deleted old array" << endl;

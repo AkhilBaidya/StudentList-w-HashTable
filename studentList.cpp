@@ -41,7 +41,7 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 //FUNCTION PROTOTYPES: decided not to pass pointers by reference, just to be careful
 void ADD(Student*, Student** &, int &, bool &); 
 void PRINT(Student**, int);
-void DELETE(Student**, int );
+void DELETE(Student**, int &, int);
 bool QUIT(Student**);
 
 int HASH(Student*, int &);
@@ -121,7 +121,14 @@ int main() { //this is where the user will input commands to edit a student list
     }
 
     else if (!strcmp(input, "DELETE")) { //if the character array spells out "DELETE"...
-      //DELETE(studVec); //delete a student
+
+      int wantedId = 0;
+
+      cout << "Delete student(s) of which ID?" << endl;
+
+      cin >> wantedId;
+
+      DELETE(tpntr, size, wantedId); //delete a student
     }
     
     else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
@@ -223,52 +230,58 @@ void PRINT(Student** arrayPntr, int size) {
 /* The DELETE() function takes in the current vector of students (student pointers) and
 prompts the user for a student id. It then erases the student with that id from the student list.
 */
-void DELETE(Student** array, int wantedId) {
+void DELETE(Student** array, int &size, int wantedId) {
   //based on print function code
   for (int i = 0; i < size; i++) {
 
-    Student* current = arrayPntr[i];
-
-    Student* next = new Student();
+    Student* head = array[i];
     
+    Student* current = head;
+    
+    Student* next = new Student();
+
+    Student* prev = new Student();
+
     while (current != NULL) {
 
+      cout << "entered while loop" << endl;
       next = current -> nextStudent;
-
+      
       if (next != NULL) {
 
-	if (current -> id == wantedId) {
+	if (next -> id == wantedId) {
+
 	  char answer;
-	  cout << "Would you like to remove this student with the specified id (y/n)?" << endl;
-	  cout << "Name: " << current -> firstName << " " << current -> lastName << ", ";
-	  cout << "ID: " << current -> id << ", ";
-	  cout << "GPA: " << current -> gpa << endl;
-	  cin >> answer;  
+	  cout << "Would you like to delete this student with the specified id? (y/n)" << endl; 
+	  cout << "Name: " << next -> firstName << " " << next -> lastName << ", ";
+	  cout << "ID: " << next -> id << ", ";
+	  cout << "GPA: " << next -> gpa << endl;
+
+	  cin >> answer;
+	  if (answer == 'y') {
+
+	    current -> nextStudent = NULL;
+	    current -> nextStudent = next -> nextStudent;
+	    next -> nextStudent = NULL;
+
+	    delete next;
+	    cout << "deleted!" << endl;
+	  }
 	}
       }
 
-      
+      current = current -> nextStudent;
     }
 
-
-    
-    do {
-
-      if (current != NULL) {
-
-	cout << "Name: " << current -> firstName << " " << current -> lastName << ", ";
-	cout << "ID: " << current -> id << ", ";
-	cout << "GPA: " << current -> gpa << endl;
-	current = current -> nextStudent;
+    if (head != NULL) {
+      cout << "oh head" << endl;
+      if (head -> id == wantedId) {
+	array[i] = head -> nextStudent;
       }
-
     }
-    while (current != NULL);
   }
-    return;
 }
-
-
+  
 bool QUIT(Student** array) {
   return false;
 }

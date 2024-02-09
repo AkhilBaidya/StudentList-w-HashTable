@@ -42,7 +42,7 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 void ADD(Student*, Student** &, int &, bool &); 
 void PRINT(Student**, int);
 void DELETE(Student**, int &, int);
-bool QUIT(Student**);
+bool QUIT(Student**, int &);
 
 int HASH(Student*, int &);
 void CHAIN(Student*, Student* , Student** &, int, int, int &, bool &);
@@ -86,7 +86,7 @@ int main() { //this is where the user will input commands to edit a student list
 
     if (!strcmp(input, "QUIT")) { //if the character array (user input) spells out "QUIT"...
       cout << "quitting student list program" << endl;
-      running = false; //quit the program! (the program continues and loops if running = true)
+      running = QUIT(tpntr, size); //quit the program! (the program continues and loops if running = true)
     }
 
     else if (!strcmp(input, "ADD")) { //if the character array spells out "ADD"...
@@ -274,15 +274,60 @@ void DELETE(Student** array, int &size, int wantedId) {
     }
 
     if (head != NULL) {
-      cout << "oh head" << endl;
       if (head -> id == wantedId) {
+
+	cout << "head" << endl;
+	char answer;
+	cout << "Would you like to delete this student with the specified id? (y/n)" << endl\
+;
+        cout << "Name: " << head -> firstName << " " << head -> lastName << ", ";
+        cout << "ID: " << head -> id << ", ";
+        cout << "GPA: " << head -> gpa << endl;
+	cin >> answer;
+
+	if (answer == 'y') {
+	
 	array[i] = head -> nextStudent;
+
+	}
       }
     }
   }
 }
   
-bool QUIT(Student** array) {
+bool QUIT(Student** array, int &size) {
+
+  //copied delete function code (just now deletes everything!)
+  for (int i = 0; i < size; i++) {
+
+    Student* head = array[i];
+    
+    Student* current = head;
+    
+    Student* next = new Student();
+
+    Student* prev = new Student();
+
+    while (current != NULL) {
+
+      cout << "entered while loop" << endl;
+      next = current -> nextStudent;
+      
+      if (next != NULL) {
+	current -> nextStudent = NULL;
+	current -> nextStudent = next -> nextStudent;
+	next -> nextStudent = NULL;
+	delete next;
+	cout << "deleted!" << endl;  
+      }
+      current = current -> nextStudent;
+    }
+
+    if (head != NULL) {
+	array[i] = head -> nextStudent;
+    }
+  }
+  
   return false;
 }
 

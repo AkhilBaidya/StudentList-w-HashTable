@@ -3,24 +3,23 @@
 
 //Date of Submission (mm/dd/yy): 02/08/24
 
-/* Notes: In this program, the user will be able to edit a list of students.
-The user can input the commands "ADD," "DELETE," "PRINT" and "QUIT." QUIT
-exits the program.
+/* Notes: In this program, the user will be able to edit a list of students that are stored in a hash table. The user can input the commands "ADD," RAND," "DELETE," "PRINT" and "QUIT." QUIT exits the program.
 
-   1. ADD registers a new student in the list. The user inputs the student's names,
-   id, and gpa (the id and gpa must be inputted as numbers).
+   1. ADD registers a new student in the hash table. The user inputs the student's names,id, and gpa (the id and gpa must be inputted as numbers).
 
-   2. DELETE removes a student from the student list. The user must input a student
-   id to identify this student to be removed.
+   2. RAND creates random students (random names, gpa, id) and adds them to the hash table. The user will be prompted for how many random students they want to generate (ex. 100). 
 
-   3. PRINT displays all the students currently registered in the student list and their info.
- */
+   3. DELETE removes a student (or multiple) from the student list. The user must input a student id to identify this student to be removed. There will be a final prompt to delete the entry (a y/n prompt) before deletion.
 
+   4. PRINT displays all the students currently registered in the hash table and their info.
 
-/* Credits: 
-Initial studentList.cpp file taken from my github at https://github.com/AkhilBaidya/StudentList.git
+ After every ADD or RAND, the code will check whether to rehash the students into a new list of slightly over double-the-size (a max of 3 collisions are allowed, where those students are chained in a linked list - otherwise, rehashing is called) 
 */
 
+/* Additional Note about Project: This project is a reworking of a previous studentList project. The initial studentList.cpp file was taken from my GitHub at at https://github.com/AkhilBaidya/StudentList.git.
+
+  Referred to Mr. Galbraith's explanation of Hash Table (https://www.youtube.com/watch?v=tV3Jsa0_Xm4&t=2s) to better understand what I'm dealing with and what a Hash Function is
+*/
 
 #include <iostream>
 #include <cstring>
@@ -38,40 +37,41 @@ struct Student { //a student has a first name, last name, id, gpa, and a followi
 };
 
 
-//FUNCTION PROTOTYPES: decided not to pass pointers by reference, just to be careful
+//FUNCTION PROTOTYPES:
+
+//User commands (ADD, RAND, PRINT, DELETE, QUIT):
 void ADD(Student*, Student** &, int &, bool &); 
+void RANDOM_STUDENT(int, Student** &, int &, bool &);
 void PRINT(Student**, int);
 void DELETE(Student**, int &, int);
 bool QUIT(Student**, int &);
 
+//Additional functions (to support :
 int HASH(Student*, int &);
 void CHAIN(Student*, Student* , Student** &, int, int, int &, bool &);
-void UNCHAIN(Student* );
-void RANDOM_STUDENT(int, Student** &, int &, bool &); //made void (debugging)
 void REHASH(Student** &, Student** &, int &, int, bool &);
 
 
 //MAIN FUNCTION:
 
-int main() { //this is where the user will input commands to edit a student list
-
+int main() { //this is where the user will input commands to edit the student list
 
   //Variables:
   bool running = true; //loops the student list program
-  int size = 100;
-  Student* table[size]; // a hash table that will store the students
-  bool rehash = false;
+  bool rehash = false; //determines whether to rehash (rehash hash table if true)
+  int size = 100; //the size of the hash table (will change after every rehash)
+  Student* table[size]; // this is the hash table that will store the students
   
   for (int i = 0; i < size; i++) {
-    table[i] = NULL; //suggested by Mr. Galbraith - everything is not NULL by default :)
+    //need to make sure everything in the initial hash table is NULL and empty!
+    table[i] = NULL; //loop to set everything null suggested by Mr. Galbraith - everything is not NULL by default in C++ :)
   }
   
-  Student** tpntr = new Student*[size]; //help from Mr. Galbraith in making this **
-  cout << tpntr << endl;
+  Student** tpntr = new Student*[size]; //this is a pointer "table pointer" that will point to the hash table (help from Mr. Galbraith in realizing I need a Student** and advice from Kevin that I can allocate space for Student*[size] not only Student**)
+  
   tpntr = table;
-  cout << tpntr << endl;
 
-  char input[7]; //an array to store the user's inputs (max length is 6)
+  char input[7]; //an array to store the user's inputs (max length of input is 6)
 
   while (running) {
     
@@ -79,177 +79,174 @@ int main() { //this is where the user will input commands to edit a student list
     cin >> input;
 
     for (int i = 0; i < strlen(input); i++) {
-      input[i] = toupper(input[i]); //convert user input to upper case (add and ADD will be considered the same)
-
-      //referred to https://cplusplus.com/reference/cctype/toupper/ for toupper() command.
+      input[i] = toupper(input[i]); //convert user input to upper case
+      //Referred to https://cplusplus.com/reference/cctype/toupper/ for toupper() command
     }
 
-    if (!strcmp(input, "QUIT")) { //if the character array (user input) spells out "QUIT"...
+    //User inputs "quit":
+    if (!strcmp(input, "QUIT")) {
       cout << "quitting student list program" << endl;
       running = QUIT(tpntr, size); //quit the program! (the program continues and loops if running = true)
     }
 
-    else if (!strcmp(input, "ADD")) { //if the character array spells out "ADD"...
-      
+    //User inputs "add":
+    else if (!strcmp(input, "ADD")) {
+
       char firstN[20]; //new student's first name (taken from input)
       char lastN[20]; //new student's last name (taken from input)
       int ID; // new student's id (taken from input)
       float GPA; // new student's gpa (taken from input)
 
-      Student* stuPnt = new Student(); //create a new pointer to a new Struct (a new Student)  
-      stuPnt -> nextStudent = NULL;
+      Student* stuPnt = new Student(); //create a new pointer to a new Student  
+      stuPnt -> nextStudent = NULL; //Just in case - should not have a nextStudent yet
       
       //Ask for new student details:
-      cout << "what is the first name of the student?" << endl; //adding new first name
+      cout << "what is the first name of the student?" << endl;
       cin >> firstN;
-      strcpy((*stuPnt).firstName, firstN); //need to dereference pointer to set variables in new Struct (new student) equal to inputs (through strcpy())
+      strcpy((*stuPnt).firstName, firstN); //set first name
 
-      cout << "last name?" << endl; //do the same for the new last name
+      cout << "last name?" << endl;
       cin >> lastN;
-      strcpy((*stuPnt).lastName, lastN);
+      strcpy((*stuPnt).lastName, lastN); //set last name
 
-      cout << "id?" << endl; //do the same for the new id
+      cout << "id?" << endl;
       cin >> ID;
-      (*stuPnt).id = ID;
+      (*stuPnt).id = ID; //set id
 
-      cout << "GPA?" << endl; //do the same for the new gpa
+      cout << "GPA?" << endl;
       cin >> GPA;
-      (*stuPnt).gpa = GPA;
+      (*stuPnt).gpa = GPA; //set gpa
 
-      
-      ADD(stuPnt, tpntr, size, rehash); //add a student
+      ADD(stuPnt, tpntr, size, rehash); //add the student!
     }
 
-    else if (!strcmp(input, "DELETE")) { //if the character array spells out "DELETE"...
+    //User inputs "delete":
+    else if (!strcmp(input, "DELETE")) {
 
+      //Get id of student the user wants to delete:
       int wantedId = 0;
-
       cout << "Delete student(s) of which ID?" << endl;
-
       cin >> wantedId;
 
-      DELETE(tpntr, size, wantedId); //delete a student
+      DELETE(tpntr, size, wantedId); //delete the student
     }
-    
-    else if (!strcmp(input, "PRINT")) { //if the character array spells out "PRINT"...
+
+    //User inputs "print":
+    else if (!strcmp(input, "PRINT")) {
       PRINT(tpntr, size); //print out the students
     }
 
+    //User inputs "rand":
     else if (!strcmp(input, "RAND")) {
+      
+      //Get how many new students the user wants:
       int num;
       cout << "How many random students would you like to add?" << endl;
       cin >> num;
-      RANDOM_STUDENT(num, tpntr, size, rehash);
+
+      RANDOM_STUDENT(num, tpntr, size, rehash); //add random students
       cout << "random students added!" << endl;
     }
 
-    if (rehash) {
+    //At the end of each "turn" (after add or rand is called and finished), check for rehashing (indicated by boolean "rehash"):
 
-      //REHASH(tpntr, );
+    if (rehash) { //if need to rehash:
 
-    int newSize = (int) size*2.3; //*prime number sugestion from my father to help with reshashing  
+      //Need a bigger size for the new array:
+      int newSize = (int) size*2.3; // Multiplying by prime number sugestion from my father to help generate more unique values when the size is used to modulus other values  
     
-    cout << "woah - we had reached max collisions and will now make rehash of size " << newSize<< endl;
-    Student** newPlacePntr = new Student*[newSize];
+      cout << "woah - we had reached max collisions and will now need to rehash into a new hash table of size " << newSize << endl;
     
-    cout << "made new array" << endl;
-    //make sure everthing here is null:
-    for (int i = 0; i < newSize; i++) {
-      newPlacePntr[i] = NULL;
-    }
+      Student** newPlacePntr = new Student*[newSize]; //new hash table
     
-    cout << "made empty bigger array and entering rehash" << endl;
-    cout << "here is the old array address before: " << tpntr << endl;
-    REHASH(tpntr, newPlacePntr, size, newSize, rehash);
-    cout << "rehashed!" << "changed address to " << tpntr << endl;
+      //make sure everthing here is null:
+      for (int i = 0; i < newSize; i++) {
+	newPlacePntr[i] = NULL;
+      }
+   
+      REHASH(tpntr, newPlacePntr, size, newSize, rehash); //REHASH!
+      cout << "rehashed!" << endl;
     }
   }
   return 0;
 }
 
+
 //OTHER FUNCTIONS IMPLEMENTED IN MAIN FUNCTION:
 
-
-/*The ADD() function takes in the current vector of students (student pointers) and
-creates a new student (and student pointer that is added to the vector).
+/*The ADD() function takes in the a new student and the hash table. It also takes the current size of the table in order to hash the new student and get an index for where to put it in the table. If the spot at the index is empty, the student is simply added there; if not, chaining is needed and the CHAIN() function is called. ADD also takes in the boolean rehash to be passed into CHAIN() to check for max collisions and the need to rehash the table (which would set the boolean to true).
  */
 
 void ADD(Student* newStudent, Student** &arrayPntr, int &size, bool &rehash) {
 
-  int index = HASH(newStudent, size); //get the index I should put the student in
-  cout << index << endl;
+  int index = HASH(newStudent, size); //Get the index the student should be put in
   
-  Student* head = arrayPntr[index]; //the thing at that location
+  Student* head = arrayPntr[index]; //Get the thing already at that location
 
-  if (head == NULL) {//no collision
+  if (head == NULL) {//If there is nothing there, then there is no collision!
+
+    //Simply place the new student at the location: 
     arrayPntr[index] = newStudent;
-    arrayPntr[index] -> nextStudent = NULL; //making next student null after adding to array just in case something weird occurs with memory
+    
+    arrayPntr[index] -> nextStudent = NULL; //<aking next student null after adding to array just in case something weird occurs with memory
   }
 
-  else {
+  else { //If there is a collision...
     cout << "going to have to chain!" << endl;
-    CHAIN(newStudent, head, arrayPntr, 0, 3, size, rehash); //chaining needed
+    CHAIN(newStudent, head, arrayPntr, 0, 3, size, rehash); //CHAIN the new student in the array
   }
-  
-  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << " to " << arrayPntr << endl;
-  //cout << "********" << endl;
-  //PRINT(arrayPntr, size);
-  //cout << "******endofupdate*" << endl;
+
+  //For user's reference;
+  cout << "added " << newStudent -> firstName << " " << newStudent -> lastName << endl;
   return;
 }
 
-/* The PRINT() function takes in the current vector of students (student pointers) and
-prints out each student registered (and their info).
+/* The PRINT() function takes in the hash table and its current size and prints out each student registered (and their info).
 */
-
 void PRINT(Student** arrayPntr, int size) {
   
-  cout.setf(ios::showpoint); //from studentList
+  cout.setf(ios::showpoint); //This formatting code is from my original studentList (linked in the additional notes at the top of this file)
   cout.precision(3);
  
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < size; i++) { //Going through each "row" in the array (if the array is considered rows of linked lists):
 
-    Student* current = arrayPntr[i];
+    Student* current = arrayPntr[i]; //Start with the first element in the row
     
     do {
 
-      if (current != NULL) {
+      if (current != NULL) { //If the current student exists, print out their info:
 
 	cout << "Name: " << current -> firstName << " " << current -> lastName << ", ";
 	cout << "ID: " << current -> id << ", ";
 	cout << "GPA: " << current -> gpa << endl;
-	current = current -> nextStudent;
+	current = current -> nextStudent; //Go to the next student down the linked list
       }
-
     }
     while (current != NULL);
+
   }
-    return;
+  return;
 }
 
-/* The DELETE() function takes in the current vector of students (student pointers) and
-prompts the user for a student id. It then erases the student with that id from the student list.
+/* The DELETE() function takes in the hash table, its size, and the id of the student the user wants to delete. It then prompts the user, for each student with the id, whether to delete the student. If yes, the student is deleted.
 */
 void DELETE(Student** array, int &size, int wantedId) {
-  //based on print function code
+  
   for (int i = 0; i < size; i++) {
 
-    Student* head = array[i];
+    Student* head = array[i]; //This is the head of the linked list in this "row" of the table
     
-    Student* current = head;
+    Student* current = head; //The current student being looked at is the head
     
     Student* next = new Student();
 
-    Student* prev = new Student();
+    while (current != NULL) { //For a current student:
 
-    while (current != NULL) {
-
-      cout << "entered while loop" << endl;
       next = current -> nextStudent;
       
-      if (next != NULL) {
+      if (next != NULL) { 
 
-	if (next -> id == wantedId) {
+	if (next -> id == wantedId) { //If the next student has the id wanted, delete the next student:
 
 	  char answer;
 	  cout << "Would you like to delete this student with the specified id? (y/n)" << endl; 
@@ -260,19 +257,21 @@ void DELETE(Student** array, int &size, int wantedId) {
 	  cin >> answer;
 	  if (answer == 'y') {
 
+	    //First disconnect the nextStudent from the linked list:
 	    current -> nextStudent = NULL;
 	    current -> nextStudent = next -> nextStudent;
 	    next -> nextStudent = NULL;
 
+	    //Then delete:
 	    delete next;
-	    cout << "deleted!" << endl;
+	    cout << "Deleted!" << endl;
 	  }
 	}
       }
-
-      current = current -> nextStudent;
+      current = current -> nextStudent; //Move down the linked list
     }
 
+    //After all that, check the first element in the linked list for deletion:
     if (head != NULL) {
       if (head -> id == wantedId) {
 
@@ -287,250 +286,177 @@ void DELETE(Student** array, int &size, int wantedId) {
 
 	if (answer == 'y') {
 	
-	array[i] = head -> nextStudent;
+	  array[i] = head -> nextStudent; //delete it by setting its place in the array equal to its nextStudent
 
 	}
       }
     }
   }
 }
-  
+
+
+/* The QUIT() function takes in the current hash table and its size and deletes all the elements from the hash table. It returns false, signalling that the program should end.
+ */
 bool QUIT(Student** array, int &size) {
 
-  //copied delete function code (just now deletes everything!)
   for (int i = 0; i < size; i++) {
 
-    Student* head = array[i];
+    Student* head = array[i]; //Head of each linked list in the array
     
-    Student* current = head;
+    Student* current = head; //The current student being looked at is the head
     
     Student* next = new Student();
 
-    Student* prev = new Student();
+    while (current != NULL) {//For each current student:
 
-    while (current != NULL) {
-
-      cout << "entered while loop" << endl;
       next = current -> nextStudent;
       
-      if (next != NULL) {
+      if (next != NULL) { //Check if there is a next student:
+
+	//Disconnect the next student from the linked list: 
 	current -> nextStudent = NULL;
 	current -> nextStudent = next -> nextStudent;
 	next -> nextStudent = NULL;
-	delete next;
-	cout << "deleted!" << endl;  
+
+	//Then delete it:
+	delete next;  
       }
-      current = current -> nextStudent;
+      current = current -> nextStudent; //Move down the linked list
     }
 
+    //Now delete the head of the linked list if it exists:
     if (head != NULL) {
 	array[i] = head -> nextStudent;
     }
   }
-  
   return false;
 }
 
+
+/* The HASH() function takes in a student and the current size of the hash table and returns a number that will be the student's index position in the hash table. Ideally, the possible values from the function should be spread out within the current size.
+ */
+
 int HASH(Student* student, int &size){
 
-  //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
+  //Refered to Carnegie Mellon School of CS ASCII Chart at https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html (for predicting max integer sum of chars in the students' names)
 
+  //Get the student's info:
   char* first = student -> firstName;
   char* last = student -> lastName;
   float gpa = student -> gpa;
   int id = student -> id;
   
   int sum;
+
+  //Add the sum of the ASCII values of the first and last name chars of the student:
   
   for (int i = 0; i < strlen(first); i++) {
-    sum += (int) ((toupper(first[i]))*17); //add up sum of chars in first name - average first name lenth around 6 so max around 540
+    sum += (int) ((toupper(first[i]))*17); //Multiplied each ASCII value, first, by a prime number, to possibly help spread out the resulting values (suggestion from my father)
     }
 
   for (int i = 0; i < strlen(last); i++) {
     sum += (int) ((toupper(last[i]))*97);
   }
-
-  //int num = ((sum + (int)gpa)/6) * (size/100);
-
-  //cout << "got a hash of " << (num%size) << endl;
-  //return ((sum/6)%97) * (size/100);
-  return (sum)%(size * 97/100);
+  
+  return (sum)%(size * 97/100); //Should mod by the size to keep values within possible indices for the array
+  //Adding a flavor of randomness with * 97/100 to possibly help with spreading out hash values 
 }
 
-
+/* RANDOM_STUDENT() function takes in a number of students to generate, the hash table, and its size. From this, it adds that number of randomly generated students using ADD(). It passes in the bool rehash into ADD() which passes into CHAIN() to check for rehashing. 
+*/
 void RANDOM_STUDENT(int num, Student** &array, int &size, bool &rehash) {
-  //https://www.w3schools.com/cpp/cpp_files.asp
+  //Referred to w3schools in understanding that ifstream is a class that I can initialize to read in a file, and that I need to include <fstream> at the top of my .cpp file (source at https://www.w3schools.com/cpp/cpp_files.asp)
+
+  //Referred to GeeksforGeeks to understand that I need srand() and need to set a seed to truly get randomized results every time rand() is called (source at https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/)
+  srand(time(0)); //This allows random results to be random every time program runs
   
-  srand(time(0)); //this allows random results to be random every time program runs
-  
-  ifstream file("firstNames.txt"); //taken from above source, the code
-  
+  ifstream file("firstNames.txt"); //Referenced from above w3schools source
   ifstream file2("lastNames.txt");
 
-  //random first name:
-  char* firsts[20]; //https://www.udacity.com/blog/2021/05/how-to-read-from-a-file-in-cpp.html taught me that I could use >>
-  char* lasts[20];
-    
-  for (int i = 0; i < 20; i++) {
+  //Random first and last name:
+  char* firsts[20];
+  char* lasts[20]; //these are arrays of names
+
+  //Referred to Udacity.com and the blog by their Udacity team (https://www.udacity.com/blog/2021/05/how-to-read-from-a-file-in-cpp.html) to learn that I can read in files using >> (which stops after encountering a space " ")
+  
+  for (int i = 0; i < 20; i++) { //for each line in the files (20 lines each)
     firsts[i] = new char[20];
     lasts[i] = new char[20];
-    file >> firsts[i];
+    file >> firsts[i]; //read in name from file line into array 
     file2 >> lasts[i];
   }
   
   for (int i = 0; i < num; i++) {
     Student* newStud = new Student();
     
-    //https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/ for rand() function paired with modulus:
-    strcpy((*newStud).firstName, firsts[rand()%20]);
-    strcpy((*newStud).lastName, lasts[rand()%20]);
-    newStud -> gpa = rand()%4;
-    newStud -> id = i;
-    ADD(newStud, array, size, rehash);
+    //Referred to GeeksforGeeks again in realizing that in order to set a range for rand(), there isn't an argument, but I need modulus instead (https://www.geeksforgeeks.org/rand-and-srand-in-ccpp/):
+    strcpy((*newStud).firstName, firsts[rand()%20]); //set random first name
+    strcpy((*newStud).lastName, lasts[rand()%20]); //last name
+    newStud -> gpa = rand()%4; //gpa
+    newStud -> id = i; //id just increments
+    
+    ADD(newStud, array, size, rehash); //add random student
   }
   return;
 }
 
-void CHAIN(Student* newStudent, Student* head, Student** &oldArrayPntr, int c, int limit, int &size, bool &rehash) { //made this a while loop (maybe recursion is contributing to seg fault?
+/*CHAIN() function takes in a new student, the head of the linked list where we want to add that student, the hash table, and a limit for the number of collisions allowed (length of linked list). It goes to the end of the list and adds the student, but sees whether the length of the list exceeds the limit. That is why it also takes in the rehash bool, which is set to true if the limit is exceeded (rehashing is needed!)
+ */
+void CHAIN(Student* newStudent, Student* head, Student** &oldArrayPntr, int c, int limit, int &size, bool &rehash) {
 
   Student* current = new Student();
   current = head;
-  int count = 1;
+  int count = 1; 
 
-  cout << "attempting while loop" << endl;
-  while (current -> nextStudent != NULL) {
-
-    cout << "entered loop" << endl;
+  while (current -> nextStudent != NULL) { //continue going through linked list until next student is null (meaning the ending is reached)
     current = current -> nextStudent;
-    count++;
+    count++; //count the length
   }
 
   if (count == limit) {
-
-    /*
-    int newSize = (int) size*2.3; //*prime number sugestion from my father to help with reshashing  
-    
-    cout << "woah - reached max collisions and going to have to rehash of size " << newSize<< endl;
-    Student** newPlacePntr = new Student*[newSize];
-    
-    cout << "made new array" << endl;
-    //make sure everthing here is null:
-    for (int i = 0; i < newSize; i++) {
-      newPlacePntr[i] = NULL;
-    }
-    
-    cout << "made empty bigger array and entering rehash" << endl;
-    cout << "here is the old array address before: " << oldArrayPntr << endl;
-    REHASH(oldArrayPntr, newPlacePntr, size, newSize);
-    //*oldArrayPntr = *newPlacePntr;
-
-    //delete[] newPlacePntr;
-    
-    //newPlacePntr = NULL;
-    //delete newPlacePntr;
-    //size = newSize;
-    cout << "rehashed!" << "changed address to " << oldArrayPntr << endl;
-    ADD(newStudent, oldArrayPntr, size);
-
-    cout << "array is now*************" << endl;
-    PRINT(oldArrayPntr, size);
-    cout << "***********" << endl;*/
-
-    rehash = true;
-    }
-    cout << "reached placing next student" << endl;
-    current -> nextStudent = newStudent;
-    current -> nextStudent -> nextStudent = NULL; //suggestion by father: just in case, set the next student as null after adding it to the end of the linked list 
-  /*
-  Student* next = head -> nextStudent;
-  int cur = current;
-  int lim = limit;
-  
-  if (next == NULL) { //add to end of chain
-
-    head -> nextStudent = newStudent;
-    return;
+    rehash = true; //we're going to later rehash if the limit was exceeded
   }
 
-  if (cur == lim) {
-    cout << "woah - reached max collisions and going to have to rehash" << endl;
-    Student* newPlace[size*2];
-
-    //make sure everthing here is null:
-    for (int i = 0; i < size*2; i++) {
-      newPlace[i] = NULL;
-    }
-    cout << "made empty bigger array and entering rehash" << endl;
-    cout << "here is the old array address before: " << oldArray << endl;
-    oldArray = REHASH(oldArray, newPlace, size, size*2);
-    cout << "rehashed!" << "changed address to " << oldArray << endl;
-    return;
-  }
-
-  cur++;
-  
-  CHAIN(newStudent, next, oldArray, cur, lim, size); //recurse*/
+  current -> nextStudent = newStudent; //add the student to the end of the linked list
+  current -> nextStudent -> nextStudent = NULL; //Suggestion by father: just in case, set the next student after the new addition as null after having added it to the end of the linked list, since it is the end of the list
+ 
   return;
 }
 
-void UNCHAIN(Student** head) {
-  return;
-}
+/* REHASH() function takes in the original hash table, the space for the new one, the current size of the original hash table, and the size for the new hash table. It then rehashes each member of the original hash table using the new size and puts them into the new hash table. The function also takes in the bool rehash to set it to false at the end, since rehashing is complete.
+*/
 
 void REHASH(Student** &oldArrayPntr, Student** &newArrayPntr, int &currSize, int newSize, bool &rehash) {
-
-  cout << "entered rehash function for new size " << newSize << endl;
   
   for (int i = 0; i < currSize; i++) {
 
-    Student* current = oldArrayPntr[i]; //this loop brought from print function above
+    Student* current = oldArrayPntr[i]; //this is the head of each linked list in the original array
     
     do {
 
       if (current != NULL) {
-	cout << "at position "<<i<<" - going to move " << current -> firstName << current -> lastName << endl;
 	
-	//cout << "who should be HASH(current, newSize);"
+	cout << "At position "<<i<<", going to move " << current -> firstName << current -> lastName << endl;
 
+	//Copy the info of the current student into new student:
 	Student* newStudent = new Student();
 	strcpy(newStudent -> firstName, current -> firstName);
 	strcpy(newStudent -> lastName, current -> lastName);
 	newStudent -> gpa = current -> gpa;
 	newStudent -> id = current -> id;
-	newStudent -> nextStudent = NULL;
+	newStudent -> nextStudent = NULL; //but set the next student to null
 	
-	ADD(newStudent, newArrayPntr, newSize, rehash); //add to new array
-	//Student *oldCurr = current;
-	current = current -> nextStudent; //loop
-	//delete oldCurr;
+	ADD(newStudent, newArrayPntr, newSize, rehash); //add this new, fresh, but copied student to the new array
+     
+	current = current -> nextStudent; //Go down the linked list
       }
-
     }
     while (current != NULL);
-    
   }
-
-  cout << "put everything in new array, going to delete old array" << endl;
-
-  //for (int i = 0; i < currSize; i++) {
-  //oldArrayPntr[i] = NULL; //dunno how to delete this yet
-  //}
-
-  oldArrayPntr = newArrayPntr;
-
-  cout << "*******rehash(still have to add more perhaps*" << endl;
-  PRINT(oldArrayPntr, newSize);
-  cout << "******" << endl;
-
-  //for (int i = 0; i < newSize; i++) {
-  //newArrayPntr[i] = NULL;
-  //}
-
-  //delete[] oldArray;
-
-  cout << "deleted old array" << endl;
   
-  currSize = newSize;
-  rehash = false;
+  oldArrayPntr = newArrayPntr; //The original array will now become the new array (it has beenreborn as a bigger hash table)
+  currSize = newSize; //So has its size been reborn
+  
+  rehash = false; //No more need to rehash this turn, since it was already done
   return;
 }
